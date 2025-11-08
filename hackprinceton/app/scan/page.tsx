@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import ImageUpload from '../components/ImageUpload';
-import { getCurrentUser } from '@/lib/auth';
-import { uploadScan } from '@/lib/database';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import ImageUpload from "../components/ImageUpload";
+import { getCurrentUser } from "@/lib/auth";
+import { uploadScan } from "@/lib/database";
 
 export default function ScanPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -19,7 +19,7 @@ export default function ScanPage() {
     const checkAuth = async () => {
       const { user } = await getCurrentUser();
       if (!user) {
-        router.push('/login');
+        router.push("/login");
       } else {
         setUserId(user.id);
       }
@@ -27,7 +27,15 @@ export default function ScanPage() {
     checkAuth();
   }, [router]);
 
-  const handleImageSelect = (file: File) => {
+  const handleImageSelect = (file: File | null) => {
+    if (file === null) {
+      setSelectedFile(null);
+      setSelectedImage(null);
+      setIsAnalyzing(false); // Reset analysis state
+      setError(null); // Clear any previous errors
+      return;
+    }
+
     setSelectedFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -41,28 +49,56 @@ export default function ScanPage() {
 
     setIsAnalyzing(true);
     setError(null);
-    
+
     try {
-      // TODO: Replace with actual AI model API call
-      // For now, using mock analysis result
+      // 1️⃣ Prepare the form data for Flask
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      // 2️⃣ Send to your Flask backend (running on port 5001)
+      const response = await fetch("http://localhost:5001/api/predict", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to analyze image");
+      }
+
+      const result = await response.json();
+
+      // 3️⃣ Parse the backend response
+      // e.g., { prediction: "Papules_Moderate", confidence: 0.847 }
+      const predictedType = result.prediction || "Unknown";
+      const confidence = result.confidence || 0;
+
+      // 4️⃣ Convert it into your app’s structure (for Supabase upload)
       const mockResult = {
         detections: [
-          { type: 'papules', confidence: 0.85, boundingBox: { x: 100, y: 150, width: 50, height: 50 } },
-          { type: 'pustules', confidence: 0.72, boundingBox: { x: 200, y: 200, width: 40, height: 40 } },
+          {
+            type: predictedType,
+            confidence: confidence,
+            boundingBox: { x: 100, y: 100, width: 80, height: 80 }, // optional placeholder
+          },
         ],
         possibleCauses: [
-          'Hormonal changes',
-          'Dietary factors',
-          'Stress-related',
+          "Hormonal changes",
+          "Dietary factors",
+          "Stress-related",
         ],
-        severity: 'moderate' as const,
+        severity: predictedType.toLowerCase().includes("severe")
+          ? "severe"
+          : predictedType.toLowerCase().includes("moderate")
+          ? "moderate"
+          : "mild",
       };
 
-      // Get primary acne type and average confidence
-      const primaryType = mockResult.detections[0]?.type || 'acne';
-      const avgConfidence = mockResult.detections.reduce((sum, d) => sum + d.confidence, 0) / mockResult.detections.length;
+      // 5️⃣ Upload the result to Supabase
+      const primaryType = mockResult.detections[0]?.type || "acne";
+      const avgConfidence =
+        mockResult.detections.reduce((sum, d) => sum + d.confidence, 0) /
+        mockResult.detections.length;
 
-      // Upload scan to Supabase
       const { data: scanData, error: uploadError } = await uploadScan(
         userId,
         selectedFile,
@@ -71,23 +107,20 @@ export default function ScanPage() {
         avgConfidence
       );
 
-      if (uploadError) {
-        throw uploadError;
+      if (uploadError) throw uploadError;
+
+      // 6️⃣ Save results in sessionStorage
+      sessionStorage.setItem("analysisResult", JSON.stringify(mockResult));
+      if (scanData) {
+        sessionStorage.setItem("scanId", scanData.id);
+        sessionStorage.setItem("analysisImageUrl", scanData.image_url);
       }
 
-      // Store result in sessionStorage for the results page
-      // Note: Don't store image in sessionStorage (too large), use scanId instead
-      sessionStorage.setItem('analysisResult', JSON.stringify(mockResult));
-      if (scanData) {
-        sessionStorage.setItem('scanId', scanData.id);
-        // Store the image URL from Supabase instead of base64
-        sessionStorage.setItem('analysisImageUrl', scanData.image_url);
-      }
-      
-      router.push('/results');
+      // 7️⃣ Redirect to results page
+      router.push("/results");
     } catch (err: any) {
-      setError(err.message || 'Failed to analyze image');
-      console.error('Analysis error:', err);
+      console.error("Analysis error:", err);
+      setError(err.message || "Failed to analyze image");
     } finally {
       setIsAnalyzing(false);
     }
@@ -149,7 +182,7 @@ export default function ScanPage() {
                     Analyzing...
                   </span>
                 ) : (
-                  'Analyze'
+                  "Analyze"
                 )}
               </button>
             </div>
@@ -159,4 +192,3 @@ export default function ScanPage() {
     </div>
   );
 }
-

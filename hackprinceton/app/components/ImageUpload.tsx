@@ -1,19 +1,27 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
+import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 
 interface ImageUploadProps {
-  onImageSelect: (file: File) => void;
+  onImageSelect: (file: File | null) => void;
   previewImage?: string | null;
 }
 
-export default function ImageUpload({ onImageSelect, previewImage }: ImageUploadProps) {
+export default function ImageUpload({
+  onImageSelect,
+  previewImage,
+}: ImageUploadProps) {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  const handleRetakePhoto = () => {
+    onImageSelect(null);
+    handleCameraClick();
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -25,12 +33,12 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
   const handleCameraClick = async () => {
     try {
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: 'user',
+          facingMode: "user",
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
@@ -40,20 +48,21 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
       setIsVideoReady(false);
       setIsCameraOpen(true);
     } catch (err: unknown) {
-      console.error('Error accessing camera:', err);
-      let errorMessage = 'Unable to access camera. ';
+      console.error("Error accessing camera:", err);
+      let errorMessage = "Unable to access camera. ";
 
-      if (err && typeof err === 'object' && 'name' in err) {
+      if (err && typeof err === "object" && "name" in err) {
         const error = err as { name?: string };
-        if (error.name === 'NotAllowedError') {
-          errorMessage += 'Please allow camera access in your browser settings.';
-        } else if (error.name === 'NotFoundError') {
-          errorMessage += 'No camera found on your device.';
+        if (error.name === "NotAllowedError") {
+          errorMessage +=
+            "Please allow camera access in your browser settings.";
+        } else if (error.name === "NotFoundError") {
+          errorMessage += "No camera found on your device.";
         } else {
-          errorMessage += 'Please check permissions.';
+          errorMessage += "Please check permissions.";
         }
       } else {
-        errorMessage += 'Please check permissions.';
+        errorMessage += "Please check permissions.";
       }
 
       alert(errorMessage);
@@ -63,26 +72,28 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
 
   const capturePhoto = () => {
     if (videoRef.current) {
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement("canvas");
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.drawImage(videoRef.current, 0, 0);
         canvas.toBlob((blob) => {
           if (blob) {
-            const file = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
+            const file = new File([blob], "capture.jpg", {
+              type: "image/jpeg",
+            });
             onImageSelect(file);
             stopCamera();
           }
-        }, 'image/jpeg');
+        }, "image/jpeg");
       }
     }
   };
 
   const stopCamera = () => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
     if (videoRef.current) {
@@ -99,16 +110,16 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
     video.srcObject = streamRef.current;
 
     const handleLoadedMetadata = () => {
-      video.play().catch(err => {
-        console.error('Error playing video:', err);
+      video.play().catch((err) => {
+        console.error("Error playing video:", err);
       });
       setIsVideoReady(true);
     };
 
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
 
     return () => {
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
     };
   }, [isCameraOpen]);
 
@@ -116,7 +127,7 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
   useEffect(() => {
     return () => {
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
   }, []);
@@ -157,7 +168,10 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={handleCameraClick}
+                onClick={() => {
+                  onImageSelect(null); // Clear the preview image before opening camera
+                  handleCameraClick();
+                }}
                 className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
               >
                 Open Camera
@@ -182,7 +196,10 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
 
       {isCameraOpen && (
         <div className="space-y-4">
-          <div className="relative bg-black rounded-lg overflow-hidden flex items-center justify-center" style={{ minHeight: '400px', width: '100%' }}>
+          <div
+            className="relative bg-black rounded-lg overflow-hidden flex items-center justify-center"
+            style={{ minHeight: "400px", width: "100%" }}
+          >
             <video
               ref={videoRef}
               autoPlay
@@ -190,11 +207,11 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
               muted
               className="w-full h-auto max-h-[600px] object-contain"
               style={{
-                display: 'block',
-                width: '100%',
-                height: 'auto',
-                minHeight: '400px',
-                backgroundColor: '#000'
+                display: "block",
+                width: "100%",
+                height: "auto",
+                minHeight: "400px",
+                backgroundColor: "#000",
               }}
             />
             {!isVideoReady && (
@@ -236,6 +253,12 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
             />
           </div>
           <div className="flex gap-4 justify-center">
+            <button
+              onClick={handleRetakePhoto}
+              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-medium"
+            >
+              Retake Photo
+            </button>
             <button
               onClick={() => fileInputRef.current?.click()}
               className="px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-medium"

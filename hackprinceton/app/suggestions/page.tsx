@@ -1,64 +1,30 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Suggestions from '../components/Suggestions';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Suggestions from "../components/Suggestions";
+import {
+  treatmentSuggestions,
+  TreatmentSuggestion,
+} from "../../lib/treatmentSuggestions";
 
 interface Suggestion {
   title: string;
   description: string;
-  category: 'skincare' | 'lifestyle' | 'medical';
+  category: "skincare" | "lifestyle"; // Removed 'medical' since it's not in the new data
 }
 
 export default function SuggestionsPage() {
-  const [acneType, setAcneType] = useState<string>('acne');
+  const [acneType, setAcneType] = useState<string>("acne");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    const storedAcneType = sessionStorage.getItem('acneType') || 'acne';
+    const storedAcneType = sessionStorage.getItem("acneType") || "acne";
     setAcneType(storedAcneType);
 
-    // Mock suggestions based on acne type
-    const mockSuggestions: Suggestion[] = [
-      {
-        title: 'Gentle Cleansing Routine',
-        description: 'Use a mild, non-comedogenic cleanser twice daily. Avoid harsh scrubs that can irritate the skin and worsen inflammation.',
-        category: 'skincare',
-      },
-      {
-        title: 'Topical Treatment',
-        description: 'Consider using benzoyl peroxide (2.5-5%) or salicylic acid products. Start with lower concentrations to minimize irritation.',
-        category: 'skincare',
-      },
-      {
-        title: 'Moisturize Regularly',
-        description: 'Use an oil-free, non-comedogenic moisturizer to maintain skin barrier function and prevent over-drying from treatments.',
-        category: 'skincare',
-      },
-      {
-        title: 'Dietary Adjustments',
-        description: 'Reduce intake of high-glycemic foods and dairy products. Increase consumption of foods rich in omega-3 fatty acids and antioxidants.',
-        category: 'lifestyle',
-      },
-      {
-        title: 'Stress Management',
-        description: 'Practice stress-reduction techniques such as meditation, yoga, or regular exercise, as stress can exacerbate acne.',
-        category: 'lifestyle',
-      },
-      {
-        title: 'Sleep Hygiene',
-        description: 'Ensure 7-9 hours of quality sleep per night. Poor sleep can affect hormone levels and skin health.',
-        category: 'lifestyle',
-      },
-      {
-        title: 'Consult a Dermatologist',
-        description: 'If acne persists or worsens, consider consulting with a board-certified dermatologist for prescription treatments.',
-        category: 'medical',
-      },
-    ];
-
-    setSuggestions(mockSuggestions);
+    const relevantSuggestions = treatmentSuggestions[storedAcneType] || [];
+    setSuggestions(relevantSuggestions);
   }, []);
 
   return (
@@ -69,4 +35,3 @@ export default function SuggestionsPage() {
     </div>
   );
 }
-

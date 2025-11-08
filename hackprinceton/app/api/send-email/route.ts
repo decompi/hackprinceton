@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const resendApiKey = process.env.NEXT_PUBLIC_RESEND_API_KEY;
+    const resendApiKey = process.env.RESEND_API_KEY;
 
     if (!resendApiKey) {
       console.warn('Resend API key not configured');
