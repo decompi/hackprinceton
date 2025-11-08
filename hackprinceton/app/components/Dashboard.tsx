@@ -33,8 +33,10 @@ export default function Dashboard() {
         if (data) {
           setScanHistory(data);
         }
-      } catch (err: any) {
-        setError(err.message || 'Failed to load scans');
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : 'Failed to load scans';
+        setError(message);
         console.error('Error fetching scans:', err);
       } finally {
         setLoading(false);

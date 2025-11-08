@@ -1,5 +1,7 @@
 import { supabase, Scan, Dermatologist, Appointment } from './supabaseClient';
 
+export type { Scan, Dermatologist, Appointment };
+
 // Scan operations
 export const uploadScan = async (
   userId: string,
