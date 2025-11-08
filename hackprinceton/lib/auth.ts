@@ -1,7 +1,8 @@
 import { supabase } from './supabaseClient';
+import type { User } from '@supabase/supabase-js';
 
 export interface AuthResponse {
-  user: any | null;
+  user: User | null;
   error: Error | null;
 }
 
@@ -36,8 +37,14 @@ export const signUp = async (
       ]);
 
       if (profileError) {
-        console.error('Error creating user profile:', profileError);
+        console.error(
+          'Error creating user profile:',
+          JSON.stringify(profileError, null, 2),
+          profileError.message,
+          profileError.details
+        );
       }
+
     }
 
     return { user: data.user, error: null };
@@ -99,7 +106,7 @@ export const signOut = async (): Promise<{ error: Error | null }> => {
 };
 
 export const getCurrentUser = async (): Promise<{
-  user: any | null;
+  user: User | null;
   error: Error | null;
 }> => {
   try {
@@ -118,7 +125,7 @@ export const getCurrentUser = async (): Promise<{
   }
 };
 
-export const onAuthStateChange = (callback: (user: any) => void) => {
+export const onAuthStateChange = (callback: (user: User | null) => void) => {
   return supabase.auth.onAuthStateChange((_event, session) => {
     callback(session?.user ?? null);
   });

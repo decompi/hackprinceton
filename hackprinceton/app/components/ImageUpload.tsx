@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;
@@ -9,6 +10,7 @@ interface ImageUploadProps {
 
 export default function ImageUpload({ onImageSelect, previewImage }: ImageUploadProps) {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -22,54 +24,38 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
 
   const handleCameraClick = async () => {
     try {
-      // Stop any existing stream first
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
           facingMode: 'user',
           width: { ideal: 1280 },
-          height: { ideal: 720 }
-        } 
+          height: { ideal: 720 },
+        },
       });
-      
+
       streamRef.current = stream;
-      
-      // Set camera open state first so video element is rendered
+      setIsVideoReady(false);
       setIsCameraOpen(true);
-      
-      // Use setTimeout to ensure DOM is updated before setting video source
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          
-          // Ensure video plays
-          videoRef.current.onloadedmetadata = () => {
-            if (videoRef.current) {
-              videoRef.current.play().catch(err => {
-                console.error('Error playing video:', err);
-              });
-            }
-          };
-          
-          // Also try to play immediately
-          videoRef.current.play().catch(err => {
-            console.error('Error playing video immediately:', err);
-          });
-        }
-      }, 100);
-    } catch (error: any) {
-      console.error('Error accessing camera:', error);
+    } catch (err: unknown) {
+      console.error('Error accessing camera:', err);
       let errorMessage = 'Unable to access camera. ';
-      if (error.name === 'NotAllowedError') {
-        errorMessage += 'Please allow camera access in your browser settings.';
-      } else if (error.name === 'NotFoundError') {
-        errorMessage += 'No camera found on your device.';
+
+      if (err && typeof err === 'object' && 'name' in err) {
+        const error = err as { name?: string };
+        if (error.name === 'NotAllowedError') {
+          errorMessage += 'Please allow camera access in your browser settings.';
+        } else if (error.name === 'NotFoundError') {
+          errorMessage += 'No camera found on your device.';
+        } else {
+          errorMessage += 'Please check permissions.';
+        }
       } else {
         errorMessage += 'Please check permissions.';
       }
+
       alert(errorMessage);
       setIsCameraOpen(false);
     }
@@ -102,28 +88,28 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+    setIsVideoReady(false);
     setIsCameraOpen(false);
   };
 
-  // Ensure video plays when camera opens
   useEffect(() => {
-    if (isCameraOpen && videoRef.current && streamRef.current) {
-      if (!videoRef.current.srcObject) {
-        videoRef.current.srcObject = streamRef.current;
-      }
-      
-      const playVideo = async () => {
-        try {
-          if (videoRef.current) {
-            await videoRef.current.play();
-          }
-        } catch (err) {
-          console.error('Error playing video:', err);
-        }
-      };
-      
-      playVideo();
-    }
+    if (!isCameraOpen || !videoRef.current || !streamRef.current) return;
+
+    const video = videoRef.current;
+    video.srcObject = streamRef.current;
+
+    const handleLoadedMetadata = () => {
+      video.play().catch(err => {
+        console.error('Error playing video:', err);
+      });
+      setIsVideoReady(true);
+    };
+
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+
+    return () => {
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    };
   }, [isCameraOpen]);
 
   // Cleanup on unmount
@@ -203,7 +189,7 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
               playsInline
               muted
               className="w-full h-auto max-h-[600px] object-contain"
-              style={{ 
+              style={{
                 display: 'block',
                 width: '100%',
                 height: 'auto',
@@ -211,7 +197,7 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
                 backgroundColor: '#000'
               }}
             />
-            {!videoRef.current?.srcObject && (
+            {!isVideoReady && (
               <div className="absolute inset-0 flex items-center justify-center text-white">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
@@ -240,10 +226,13 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
       {previewImage && !isCameraOpen && (
         <div className="space-y-4">
           <div className="relative bg-gray-100 rounded-lg overflow-hidden">
-            <img
+            <Image
               src={previewImage}
               alt="Preview"
+              width={800}
+              height={600}
               className="w-full h-auto"
+              unoptimized
             />
           </div>
           <div className="flex gap-4 justify-center">
@@ -266,4 +255,3 @@ export default function ImageUpload({ onImageSelect, previewImage }: ImageUpload
     </div>
   );
 }
-
