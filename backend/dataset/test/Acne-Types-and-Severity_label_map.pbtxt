@@ -1,0 +1,90 @@
+item {
+    name: "Blackheads_Mild",
+    id: 1,
+    display_name: "Blackheads_Mild"
+}
+item {
+    name: "Blackheads_Moderate",
+    id: 2,
+    display_name: "Blackheads_Moderate"
+}
+item {
+    name: "Blackheads_Severe",
+    id: 3,
+    display_name: "Blackheads_Severe"
+}
+item {
+    name: "Cystic_Mild",
+    id: 4,
+    display_name: "Cystic_Mild"
+}
+item {
+    name: "Cystic_Moderate",
+    id: 5,
+    display_name: "Cystic_Moderate"
+}
+item {
+    name: "Cystic_Severe",
+    id: 6,
+    display_name: "Cystic_Severe"
+}
+item {
+    name: "Nodular_Mild",
+    id: 7,
+    display_name: "Nodular_Mild"
+}
+item {
+    name: "Nodular_Moderate",
+    id: 8,
+    display_name: "Nodular_Moderate"
+}
+item {
+    name: "Nodular_Severe",
+    id: 9,
+    display_name: "Nodular_Severe"
+}
+item {
+    name: "Papules_Mild",
+    id: 10,
+    display_name: "Papules_Mild"
+}
+item {
+    name: "Papules_Moderate",
+    id: 11,
+    display_name: "Papules_Moderate"
+}
+item {
+    name: "Papules_Severe",
+    id: 12,
+    display_name: "Papules_Severe"
+}
+item {
+    name: "Pustules_Mild",
+    id: 13,
+    display_name: "Pustules_Mild"
+}
+item {
+    name: "Pustules_Moderate",
+    id: 14,
+    display_name: "Pustules_Moderate"
+}
+item {
+    name: "Pustules_Severe",
+    id: 15,
+    display_name: "Pustules_Severe"
+}
+item {
+    name: "Whiteheads_Mild",
+    id: 16,
+    display_name: "Whiteheads_Mild"
+}
+item {
+    name: "Whiteheads_Moderate",
+    id: 17,
+    display_name: "Whiteheads_Moderate"
+}
+item {
+    name: "Whiteheads_Severe",
+    id: 18,
+    display_name: "Whiteheads_Severe"
+}
