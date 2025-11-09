@@ -1,51 +1,49 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { getCurrentUser, signOut } from '@/lib/auth';
-import { getUserProfile } from '@/lib/database';
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import { getCurrentUser, signOut } from "@/lib/auth"
+import { getUserProfile } from "@/lib/database"
 
 export default function Navbar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [userName, setUserName] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const pathname = usePathname()
+  const router = useRouter()
+  const [userName, setUserName] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { user } = await getCurrentUser();
+        const { user } = await getCurrentUser()
         if (user) {
-          // Get user profile to get the name
-          const { data: profile } = await getUserProfile(user.id);
+          const { data: profile } = await getUserProfile(user.id)
           if (profile) {
-            setUserName(profile.name || user.email?.split('@')[0] || 'User');
+            setUserName(profile.name || user.email?.split("@")[0] || "User")
           } else {
-            setUserName(user.email?.split('@')[0] || 'User');
+            setUserName(user.email?.split("@")[0] || "User")
           }
         } else {
-          setUserName(null);
+          setUserName(null)
         }
       } catch (err: unknown) {
-        // Use the error instead of leaving it unused
-        console.error('Failed to check auth status:', err);
-        setUserName(null);
+        console.error("Failed to check auth status:", err)
+        setUserName(null)
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    checkAuth();
+    checkAuth()
   }, [pathname])
 
   const handleSignOut = async () => {
-    await signOut();
-    setUserName(null);
-    router.push('/');
-  };
+    await signOut()
+    setUserName(null)
+    router.push("/")
+  }
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => pathname === path
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200">
@@ -58,28 +56,27 @@ export default function Navbar() {
             <div className="hidden md:flex space-x-6">
               <Link
                 href="/"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/')
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                  }`}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive("/") ? "text-blue-600 bg-blue-50" : "text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                }`}
               >
                 Home
               </Link>
               <Link
                 href="/about"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/about')
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                  }`}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive("/about") ? "text-blue-600 bg-blue-50" : "text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                }`}
               >
                 About AI
               </Link>
               <Link
                 href="/dermatologist"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/dermatologist')
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                  }`}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive("/dermatologist")
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                }`}
               >
                 Connect Dermatologist
               </Link>
@@ -118,6 +115,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  );
+  )
 }
-
