@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface AcneDetection {
   type: string;
@@ -55,15 +56,20 @@ export default function ResultDisplay({ imageUrl, result, onViewSuggestions }: R
     <div className="w-full max-w-6xl mx-auto space-y-6">
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Analysis Results</h2>
-        
+
         <div className="grid md:grid-cols-2 gap-6">
           {/* Image with Overlays */}
           <div className="relative bg-gray-100 rounded-lg overflow-hidden">
-            <img
-              src={imageUrl}
-              alt="Analyzed skin"
-              className="w-full h-auto"
-            />
+            <div className="w-full">
+              <Image
+                src={imageUrl}
+                alt="Analyzed skin"
+                width={800}
+                height={600}
+                className="w-full h-auto object-contain"
+                unoptimized
+              />
+            </div>
             {/* Bounding boxes overlay would be rendered here in a real implementation */}
             <div className="absolute top-4 right-4">
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getSeverityColor(result.severity)}`}>
@@ -134,6 +140,12 @@ export default function ResultDisplay({ imageUrl, result, onViewSuggestions }: R
               className="flex-1 px-8 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
             >
               View Treatment Suggestions
+            </button>
+            <button
+              onClick={handleConsultDermatologist}
+              className="flex-1 px-8 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors font-medium"
+            >
+              Consult Dermatologist
             </button>
           </div>
         </div>

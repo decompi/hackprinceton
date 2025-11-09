@@ -27,7 +27,9 @@ export default function Navbar() {
         } else {
           setUserName(null);
         }
-      } catch (error) {
+      } catch (err: unknown) {
+        // Use the error instead of leaving it unused
+        console.error('Failed to check auth status:', err);
         setUserName(null);
       } finally {
         setIsLoading(false);
@@ -35,7 +37,7 @@ export default function Navbar() {
     };
 
     checkAuth();
-  }, [pathname]); // Re-check when route changes
+  }, [pathname])
 
   const handleSignOut = async () => {
     await signOut();
@@ -56,31 +58,28 @@ export default function Navbar() {
             <div className="hidden md:flex space-x-6">
               <Link
                 href="/"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/')
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/')
                     ? 'text-blue-600 bg-blue-50'
                     : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 Home
               </Link>
               <Link
                 href="/about"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/about')
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/about')
                     ? 'text-blue-600 bg-blue-50'
                     : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 About AI
               </Link>
               <Link
                 href="/dermatologist"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/dermatologist')
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/dermatologist')
                     ? 'text-blue-600 bg-blue-50'
                     : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 Connect Dermatologist
               </Link>
@@ -96,8 +95,16 @@ export default function Navbar() {
             {isLoading ? (
               <div className="px-4 py-2 text-sm text-gray-500">Loading...</div>
             ) : userName ? (
-              <div className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full">
-                Hello {userName}
+              <div className="flex items-center space-x-2">
+                <div className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full">
+                  Hello {userName}
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="px-3 py-1 text-sm text-gray-600 hover:text-red-600 transition-colors"
+                >
+                  Sign out
+                </button>
               </div>
             ) : (
               <Link

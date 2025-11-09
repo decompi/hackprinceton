@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { signIn, signUp } from "@/lib/auth";
 
 export default function LoginPage() {
@@ -46,8 +45,20 @@ export default function LoginPage() {
           router.push("/dashboard");
         }
       }
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
+    } catch (err: unknown) {
+      let msg = "An error occurred";
+      if (err instanceof Error) {
+        msg = err.message;
+      } else if (typeof err === "string") {
+        msg = err;
+      } else {
+        try {
+          msg = JSON.stringify(err);
+        } catch {
+          /* keep fallback message */
+        }
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -119,9 +130,8 @@ export default function LoginPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${
-                  !isLogin ? "" : "rounded-t-md"
-                } focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${!isLogin ? "" : "rounded-t-md"
+                  } focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
                 placeholder="Email address"
               />
             </div>

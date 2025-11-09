@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { getUserScans, Scan } from '@/lib/database';
+import Image from 'next/image';
 
 interface WeeklyTrend {
   day: string;
@@ -169,11 +170,13 @@ export default function Dashboard() {
                 key={scan.id}
                 className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-                  <img
+                <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 relative">
+                  <Image
                     src={scan.image_url}
                     alt="Scan"
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="80px"
+                    className="object-cover"
                   />
                 </div>
                 <div className="flex-1">

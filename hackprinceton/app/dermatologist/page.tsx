@@ -19,8 +19,20 @@ export default function DermatologistPage() {
         if (data) {
           setDermatologists(data);
         }
-      } catch (err: any) {
-        setError(err.message || 'Failed to load dermatologists');
+      } catch (err: unknown) {
+        let message = 'Failed to load dermatologists';
+        if (err instanceof Error) {
+          message = err.message;
+        } else if (typeof err === 'string') {
+          message = err;
+        } else {
+          try {
+            message = JSON.stringify(err);
+          } catch {
+            /* keep fallback message */
+          }
+        }
+        setError(message);
         console.error('Error fetching dermatologists:', err);
       } finally {
         setLoading(false);

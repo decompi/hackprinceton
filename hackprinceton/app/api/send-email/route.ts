@@ -50,12 +50,17 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
     return NextResponse.json({ success: true, messageId: data.id });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in send-email API route:', error);
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+          ? error
+          : JSON.stringify(error);
     return NextResponse.json(
-      { error: 'Internal server error', message: error.message },
+      { error: 'Internal server error', message },
       { status: 500 }
     );
   }
 }
-

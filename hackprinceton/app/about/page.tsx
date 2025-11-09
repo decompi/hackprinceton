@@ -48,7 +48,7 @@ export default function AboutPage() {
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 Our AI model has been trained on diverse datasets and achieves high accuracy
-                in acne detection. However, it's important to note:
+                in acne detection. However, it&apos;s important to note:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 mb-4">
                 <li>Results are for informational purposes only</li>

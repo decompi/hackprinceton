@@ -2,7 +2,14 @@ import { supabase, Scan, Dermatologist, Appointment } from './supabaseClient';
 
 export type { Scan, Dermatologist, Appointment };
 
-// Scan operations
+interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
+  profile_pic?: string;
+  created_at?: string;
+}
+
 export const uploadScan = async (
   userId: string,
   file: File,
@@ -11,7 +18,6 @@ export const uploadScan = async (
   confidence: number
 ): Promise<{ data: Scan | null; error: Error | null }> => {
   try {
-    // First, ensure user profile exists
     const { data: userProfile, error: profileError } = await supabase
       .from('users')
       .select('id')
@@ -19,7 +25,6 @@ export const uploadScan = async (
       .single();
 
     if (profileError || !userProfile) {
-      // User profile doesn't exist, create it
       const { data: authUser } = await supabase.auth.getUser();
       if (authUser.user) {
         const { error: createError } = await supabase.from('users').insert([
@@ -38,7 +43,6 @@ export const uploadScan = async (
       }
     }
 
-    // Upload image to Supabase Storage
     const fileName = `${userId}/${Date.now()}_${file.name}`;
     const { data: imageData, error: imgError } = await supabase.storage
       .from('user-scans')
@@ -51,14 +55,12 @@ export const uploadScan = async (
       throw imgError;
     }
 
-    // Get public URL
     const { data: urlData } = supabase.storage
       .from('user-scans')
       .getPublicUrl(imageData.path);
 
     const imageUrl = urlData.publicUrl;
 
-    // Insert scan record
     const { data, error } = await supabase
       .from('scans')
       .insert([
@@ -123,7 +125,6 @@ export const getScanById = async (
   }
 };
 
-// Dermatologist operations
 export const getDermatologists = async (): Promise<{
   data: Dermatologist[] | null;
   error: Error | null;
@@ -165,13 +166,11 @@ export const getDermatologistById = async (
   }
 };
 
-// Appointment operations
 export const createAppointment = async (
   userId: string,
   dermatologistId: string,
   scanId: string | null,
-  scheduledAt: string,
-  reason?: string
+  scheduledAt: string
 ): Promise<{ data: Appointment | null; error: Error | null }> => {
   try {
     const { data, error } = await supabase
@@ -218,10 +217,9 @@ export const getUserAppointments = async (
   }
 };
 
-// User operations
 export const getUserProfile = async (
   userId: string
-): Promise<{ data: any | null; error: Error | null }> => {
+): Promise<{ data: UserProfile | null; error: Error | null }> => {
   try {
     const { data, error } = await supabase
       .from('users')
@@ -233,7 +231,7 @@ export const getUserProfile = async (
       throw error;
     }
 
-    return { data, error: null };
+    return { data: data as UserProfile, error: null };
   } catch (error) {
     return { data: null, error: error as Error };
   }
@@ -241,7 +239,7 @@ export const getUserProfile = async (
 
 export const getUserByEmail = async (
   email: string
-): Promise<{ data: any | null; error: Error | null }> => {
+): Promise<{ data: UserProfile | null; error: Error | null }> => {
   try {
     const { data, error } = await supabase
       .from('users')
@@ -253,7 +251,7 @@ export const getUserByEmail = async (
       throw error;
     }
 
-    return { data, error: null };
+    return { data: data as UserProfile, error: null };
   } catch (error) {
     return { data: null, error: error as Error };
   }
@@ -262,7 +260,7 @@ export const getUserByEmail = async (
 export const updateUserProfile = async (
   userId: string,
   updates: { name?: string; profile_pic?: string }
-): Promise<{ data: any | null; error: Error | null }> => {
+): Promise<{ data: UserProfile | null; error: Error | null }> => {
   try {
     const { data, error } = await supabase
       .from('users')
@@ -275,9 +273,8 @@ export const updateUserProfile = async (
       throw error;
     }
 
-    return { data, error: null };
+    return { data: data as UserProfile, error: null };
   } catch (error) {
     return { data: null, error: error as Error };
   }
 };
-

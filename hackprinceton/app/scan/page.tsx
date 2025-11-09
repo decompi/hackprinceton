@@ -89,8 +89,8 @@ export default function ScanPage() {
         severity: predictedType.toLowerCase().includes("severe")
           ? "severe"
           : predictedType.toLowerCase().includes("moderate")
-          ? "moderate"
-          : "mild",
+            ? "moderate"
+            : "mild",
       };
 
       // 5️⃣ Upload the result to Supabase
@@ -118,9 +118,9 @@ export default function ScanPage() {
 
       // 7️⃣ Redirect to results page
       router.push("/results");
-    } catch (err: any) {
+    } catch (err) {
       console.error("Analysis error:", err);
-      setError(err.message || "Failed to analyze image");
+      setError(err instanceof Error ? err.message : "Failed to analyze image");
     } finally {
       setIsAnalyzing(false);
     }

@@ -1,31 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Suggestions from "../components/Suggestions";
-import {
-  treatmentSuggestions,
-  TreatmentSuggestion,
-} from "../../lib/treatmentSuggestions";
+import { treatmentSuggestions } from "../../lib/treatmentSuggestions";
 
-interface Suggestion {
-  title: string;
-  description: string;
-  category: "skincare" | "lifestyle"; // Removed 'medical' since it's not in the new data
+function getInitialAcneType(): string {
+  if (typeof window !== "undefined") {
+    return sessionStorage.getItem("acneType") || "acne";
+  }
+  return "acne";
+}
+
+function getInitialSuggestions() {
+  if (typeof window !== "undefined") {
+    const storedAcneType = sessionStorage.getItem("acneType") || "acne";
+    return treatmentSuggestions[storedAcneType] || [];
+  }
+  return [];
 }
 
 export default function SuggestionsPage() {
-  const [acneType, setAcneType] = useState<string>("acne");
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const router = useRouter();
-
-  useEffect(() => {
-    const storedAcneType = sessionStorage.getItem("acneType") || "acne";
-    setAcneType(storedAcneType);
-
-    const relevantSuggestions = treatmentSuggestions[storedAcneType] || [];
-    setSuggestions(relevantSuggestions);
-  }, []);
+  const acneType = getInitialAcneType();
+  const suggestions = getInitialSuggestions();
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">

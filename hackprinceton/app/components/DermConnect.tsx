@@ -79,8 +79,20 @@ export default function DermConnect({ dermatologists }: DermConnectProps) {
         setBookingData({ date: '', time: '', reason: '' });
         setSelectedDerm(null);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to book appointment');
+    } catch (err: unknown) {
+      let msg = 'Failed to book appointment';
+      if (err instanceof Error) {
+        msg = err.message;
+      } else if (typeof err === 'string') {
+        msg = err;
+      } else {
+        try {
+          msg = JSON.stringify(err);
+        } catch {
+          /* keep fallback message */
+        }
+      }
+      setError(msg);
       console.error('Booking error:', err);
     } finally {
       setLoading(false);

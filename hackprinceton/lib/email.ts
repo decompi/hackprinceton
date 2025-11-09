@@ -1,4 +1,3 @@
-import { supabase } from './supabaseClient';
 import { getUserProfile, getDermatologistById } from './database';
 
 interface AppointmentEmailData {
@@ -13,7 +12,6 @@ export const sendAppointmentConfirmation = async (
   appointmentData: AppointmentEmailData
 ): Promise<{ success: boolean; error: Error | null }> => {
   try {
-    // Get user and dermatologist information
     const [userResult, dermResult] = await Promise.all([
       getUserProfile(appointmentData.userId),
       getDermatologistById(appointmentData.dermatologistId),
@@ -32,7 +30,6 @@ export const sendAppointmentConfirmation = async (
     const user = userResult.data;
     const dermatologist = dermResult.data;
 
-    // Format appointment date
     const appointmentDate = new Date(appointmentData.scheduledAt);
     const formattedDate = appointmentDate.toLocaleDateString('en-US', {
       weekday: 'long',
@@ -46,7 +43,6 @@ export const sendAppointmentConfirmation = async (
       hour12: true,
     });
 
-    // Create email content
     const emailSubject = `Appointment Confirmation - ${dermatologist.name}`;
     const emailBody = createEmailTemplate({
       userName: user.name || 'Valued Patient',
@@ -59,25 +55,21 @@ export const sendAppointmentConfirmation = async (
       reason: appointmentData.reason,
     });
 
-    // Direct API call to Resend (Simpler - no Edge Function needed)
     const emailResult = await sendEmailDirectly(user.email, emailSubject, emailBody);
-    
+
     return emailResult;
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error sending appointment confirmation email:', error);
     return { success: false, error: error as Error };
   }
 };
 
-// Direct email sending using Next.js API route (avoids CORS issues)
 const sendEmailDirectly = async (
   to: string,
   subject: string,
   html: string
 ): Promise<{ success: boolean; error: Error | null }> => {
   try {
-    // Use Next.js API route to avoid CORS issues
-    // The API route runs on the server and can call Resend API
     const response = await fetch('/api/send-email', {
       method: 'POST',
       headers: {
@@ -99,17 +91,15 @@ const sendEmailDirectly = async (
         errorMessage = `HTTP error: ${response.status} ${response.statusText}`;
       }
       console.error('Email sending failed:', errorMessage);
-      // Return error but don't throw - let the caller handle it
       return { success: false, error: new Error(errorMessage) };
     }
 
     const data = await response.json();
     console.log('Email sent successfully:', data.messageId);
-    
+
     return { success: true, error: null };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error sending email:', error);
-    // Return error but don't throw - let the caller handle it
     return { success: false, error: error as Error };
   }
 };
@@ -178,4 +168,3 @@ const createEmailTemplate = (data: {
 </html>
   `;
 };
-
