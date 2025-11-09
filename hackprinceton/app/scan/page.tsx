@@ -56,7 +56,7 @@ export default function ScanPage() {
       formData.append("file", selectedFile);
 
       // 2️⃣ Send to your Flask backend (running on port 5001)
-      const response = await fetch("http://localhost:5001/api/predict", {
+      const response = await fetch("https://hackprinceton-uiyx.onrender.com/api/predict", {
         method: "POST",
         body: formData,
       });
